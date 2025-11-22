@@ -1,0 +1,10 @@
+.env
+s.env
+__pycache__/
+*.pyc
+.DS_Store
+.vscode/
+results_screenshot.png
+upgrade_debug.png
+venv/
+env/

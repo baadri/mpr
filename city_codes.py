@@ -339,10 +339,15 @@ def find_city(query, max_results=5):
     # Если это похоже на IATA-код (3 буквы), ищем обратное соответствие
     if len(query) == 3 and query.isalpha():
         query_upper = query.upper()
+        
+        # 1. Сначала ищем точное совпадение
         for city, code in CITY_TO_IATA.items():
             if code == query_upper:
-                return [(city.capitalize(), code)]  # Если нашли точное совпадение, сразу возвращаем
-            elif code.startswith(query[0].upper()):
+                return [(city.capitalize(), code)]
+        
+        # 2. Если точного совпадения не найдено, ищем по первым буквам кода
+        for city, code in CITY_TO_IATA.items():
+            if code.startswith(query_upper[0]):
                 matches.append((city.capitalize(), code))
                 if len(matches) >= max_results:
                     break

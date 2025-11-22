@@ -1,14 +1,30 @@
 #!/bin/bash
+set -e
 
-# Если HEADLESS=True, запускаем просто python (Playwright сам запустится в headless)
+echo "=== ENTRYPOINT STARTED ==="
+echo "Date: $(date)"
+
+# Очистка локов
+rm -f /tmp/.X99-lock
+
 if [ "$HEADLESS" = "True" ]; then
     echo "Starting bot in HEADLESS mode..."
     python main.py
 else
-    # Если HEADLESS=False, используем xvfb-run для создания виртуального дисплея
-    echo "Starting bot with HEADLESS=False using xvfb-run..."
+    echo "Starting Xvfb manually..."
+    # Запускаем Xvfb в фоне
+    Xvfb :99 -screen 0 1920x1080x24 &
+    XVFB_PID=$!
     
-    # --auto-servernum: автоматически выбрать свободный номер дисплея
-    # --server-args: параметры экрана (разрешение)
-    exec xvfb-run --auto-servernum --server-args="-screen 0 1920x1080x24" python main.py
+    echo "Xvfb started with PID $XVFB_PID. Waiting 2 seconds..."
+    sleep 2
+    
+    export DISPLAY=:99
+    
+    echo "Starting python main.py..."
+    # Запускаем python напрямую
+    python main.py
+    
+    # Если python упадет, убиваем Xvfb
+    kill $XVFB_PID
 fi

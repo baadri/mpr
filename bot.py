@@ -471,6 +471,7 @@ async def process_booking_lastname(message: types.Message, state: FSMContext):
     await state.clear()
 
 async def main():
+    print("Bot polling started") # Добавлен print для диагностики
     await bot.delete_webhook(drop_pending_updates=True)
     await dp.start_polling(bot)
 

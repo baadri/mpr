@@ -40,9 +40,8 @@ class UpgradeStates(StatesGroup):
 # Клавиатура с кнопкой Поиск и Новый поиск
 search_kb = ReplyKeyboardMarkup(
     keyboard=[
-        [KeyboardButton(text="Поиск")], 
-        [KeyboardButton(text="💎 Проверить апгрейд")],
-        [KeyboardButton(text="🔄 Новый поиск")]
+        [KeyboardButton(text="Поиск"), KeyboardButton(text="💎 Проверить апгрейд")],
+        [KeyboardButton(text="🔄 Новый поиск"), KeyboardButton(text="💬 Менеджер")]
     ],
     resize_keyboard=True
 )
@@ -76,6 +75,13 @@ async def cmd_start(message: types.Message, state: FSMContext):
         reply_markup=search_kb
     )
 
+@dp.message(F.text == "💬 Менеджер")
+async def cmd_manager(message: types.Message):
+    await message.answer(
+        "✍️ По всем вопросам, для оформления билетов и апгрейдов пишите нашему менеджеру: @milestrade",
+        reply_markup=search_kb
+    )
+
 @dp.message(F.text.in_({"Поиск", "🔄 Новый поиск"}))
 async def start_search(message: types.Message, state: FSMContext):
     await state.clear()
@@ -90,6 +96,8 @@ async def process_origin(message: types.Message, state: FSMContext):
         return await start_search(message, state)
     if message.text == "💎 Проверить апгрейд":
         return await start_upgrade_check(message, state)
+    if message.text == "💬 Менеджер":
+        return await cmd_manager(message)
         
     city_name = message.text.strip()
     results = city_codes.find_city(city_name)
@@ -111,6 +119,8 @@ async def process_destination(message: types.Message, state: FSMContext):
         return await start_search(message, state)
     if message.text == "💎 Проверить апгрейд":
         return await start_upgrade_check(message, state)
+    if message.text == "💬 Менеджер":
+        return await cmd_manager(message)
 
     city_name = message.text.strip()
     results = city_codes.find_city(city_name)
@@ -161,6 +171,8 @@ async def process_date_manual(message: types.Message, state: FSMContext):
         return await start_search(message, state)
     if message.text == "💎 Проверить апгрейд":
         return await start_upgrade_check(message, state)
+    if message.text == "💬 Менеджер":
+        return await cmd_manager(message)
 
     date_text = message.text.strip()
     
@@ -184,6 +196,8 @@ async def process_flight_type(message: types.Message, state: FSMContext):
         return await start_search(message, state)
     if message.text == "💎 Проверить апгрейд":
         return await start_upgrade_check(message, state)
+    if message.text == "💬 Менеджер":
+        return await cmd_manager(message)
 
     if message.text not in ["Только прямые", "Любые"]:
         await message.answer("Пожалуйста, выберите вариант используя кнопки.", reply_markup=flight_type_kb)
@@ -296,6 +310,8 @@ async def process_booking_code(message: types.Message, state: FSMContext):
         return await start_search(message, state)
     if message.text == "💎 Проверить апгрейд":
         return await start_upgrade_check(message, state)
+    if message.text == "💬 Менеджер":
+        return await cmd_manager(message)
         
     code = message.text.strip().upper()
     
@@ -322,6 +338,8 @@ async def process_booking_lastname(message: types.Message, state: FSMContext):
         return await start_search(message, state)
     if message.text == "💎 Проверить апгрейд":
         return await start_upgrade_check(message, state)
+    if message.text == "💬 Менеджер":
+        return await cmd_manager(message)
         
     last_name = message.text.strip()
     
@@ -456,6 +474,9 @@ async def process_booking_lastname(message: types.Message, state: FSMContext):
             msg += "❌ <b>Тарифы подходят, но нет свободных мильных мест.</b>"
         else:
             msg += "⚠️ <b>Не все сегменты подходят по тарифу.</b>"
+        
+        # Добавляем контакт менеджера
+        msg += "\n\n✍️ Оформить апгрейд через менеджера: @milestrade"
 
         await message.answer(msg, parse_mode="HTML", reply_markup=search_kb)
         
@@ -471,7 +492,7 @@ async def process_booking_lastname(message: types.Message, state: FSMContext):
     await state.clear()
 
 async def main():
-    print("Bot polling started") # Добавлен print для диагностики
+    print("Bot polling started")
     await bot.delete_webhook(drop_pending_updates=True)
     await dp.start_polling(bot)
 
